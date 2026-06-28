@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TV Guide QR Code</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    padding: 20px;
+  }
+
+  .note {
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .note strong { color: #333; }
+
+  /* CARD */
+  .card {
+    background: #0d1117;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 340px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  }
+
+  .card-top {
+    background: linear-gradient(135deg, #0d1117 0%, #1a2035 100%);
+    border-bottom: 3px solid #e8a020;
+    padding: 22px 24px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .tv-icon {
+    width: 48px;
+    height: 48px;
+    background: #e8a020;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  .card-title .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #e8a020;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 2px;
+  }
+
+  .card-title h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #e6edf3;
+    letter-spacing: 0.5px;
+    line-height: 1;
+  }
+
+  .qr-area {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .qr-frame {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #qr-canvas {
+    width: 192px;
+    height: 192px;
+  }
+
+  .scan-label {
+    color: #8b949e;
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .scan-label strong {
+    display: block;
+    color: #e6edf3;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .card-footer {
+    background: #161b22;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #2a3040;
+  }
+
+  .channel-count {
+    color: #8b949e;
+    font-size: 12px;
+  }
+
+  .channel-count strong {
+    color: #e8a020;
+    font-size: 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+  }
+
+  .pkg-badges {
+    display: flex;
+    gap: 6px;
+  }
+
+  .pkg-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .pkg-badge.locals { background: #2ea043; color: #fff; }
+  .pkg-badge.deluxe { background: #3b7dd8; color: #fff; }
+
+  /* INSTRUCTIONS */
+  .instructions {
+    max-width: 340px;
+    width: 100%;
+    margin-top: 24px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  .instructions h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+  }
+
+  .step:last-child { margin-bottom: 0; }
+
+  .step-num {
+    width: 20px;
+    height: 20px;
+    background: #e8a020;
+    color: #000;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .url-display {
+    max-width: 340px;
+    width: 100%;
+    margin-top: 12px;
+    background: #1c2230;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #8b949e;
+    word-break: break-all;
+    text-align: center;
+    border: 1px solid #2a3040;
+  }
+
+  .url-display strong { color: #e8a020; display: block; margin-bottom: 2px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .note, .instructions, .url-display { display: none; }
+    .card { box-shadow: none; border: 1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<div class="note">
+  <strong>How to use:</strong> Host the <code>tv_guide.html</code> file online (e.g. GitHub Pages, Netlify, Google Drive), then enter your URL below to generate a real scannable QR code. Print or display the card.
+</div>
+
+<div class="card">
+  <div class="card-top">
+    <div class="tv-icon">📺</div>
+    <div class="card-title">
+      <div class="eyebrow">Channel</div>
+      <h1>TV Guide</h1>
+    </div>
+  </div>
+
+  <div class="qr-area">
+    <div class="qr-frame">
+      <canvas id="qr-canvas" width="192" height="192"></canvas>
+    </div>
+    <div class="scan-label">
+      <strong>📱 Scan to view all channels</strong>
+      Tap any channel · Search by name or number
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="channel-count">
+      <strong>120+</strong><br>Channels
+    </div>
+    <div class="pkg-badges">
+      <span class="pkg-badge locals">Locals</span>
+      <span class="pkg-badge deluxe">Deluxe</span>
+    </div>
+  </div>
+</div>
+
+<div class="instructions">
+  <h3>To make this QR code live</h3>
+  <div class="step"><div class="step-num">1</div><span>Upload <strong>tv_guide.html</strong> to any web host (GitHub Pages, Netlify, Cloudflare Pages — all free)</span></div>
+  <div class="step"><div class="step-num">2</div><span>Copy your public URL and paste it in the box below</span></div>
+  <div class="step"><div class="step-num">3</div><span>The QR code above updates instantly — print or screenshot it</span></div>
+</div>
+
+<div class="url-display">
+  <strong>Your URL</strong>
+  <input id="url-input" type="url" placeholder="https://your-site.com/tv_guide.html"
+    style="width:100%;background:transparent;border:none;outline:none;color:#e8a020;font-size:12px;text-align:center;font-family:monospace;margin-top:4px;"
+    oninput="generateQR(this.value)">
+</div>
+
+<!-- QR code library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  const canvas = document.getElementById('qr-canvas');
+  const ctx = canvas.getContext('2d');
+
+  function drawPlaceholderQR() {
+    // Draw a decorative placeholder
+    ctx.fillStyle = '#f9f9f9';
+    ctx.fillRect(0, 0, 192, 192);
+
+    const size = 192;
+    const cells = 21;
+    const cellSize = size / cells;
+
+    // Simulate QR pattern with dark/light cells
+    const pattern = [
+      [1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,0,0,0,1],
+      [1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1],
+      [1,0,1,1,1,0,1,0,0,1,1,0,0,0,1,0,1,1,1,0,1],
+      [1,0,1,1,1,0,1,0,1,0,0,1,1,0,1,0,1,1,1,0,1],
+      [1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
+      [0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0],
+      [1,0,1,1,0,1,1,1,0,0,1,0,1,1,1,0,1,1,0,1,0],
+      [0,1,0,0,1,0,0,0,1,0,0,1,0,0,0,1,0,0,1,0,1],
+      [1,1,0,1,1,0,1,0,0,1,1,0,1,0,1,0,0,1,1,0,0],
+      [0,0,1,0,0,1,0,1,1,0,0,1,0,1,0,1,1,0,0,1,0],
+      [1,0,1,0,1,0,1,0,1,1,0,0,1,0,1,0,1,0,1,0,1],
+      [0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,1,0,1,0,0,1],
+      [1,1,1,1,1,1,1,0,0,1,0,0,1,0,1,0,0,1,1,0,1],
+      [1,0,0,0,0,0,1,0,1,0,1,0,0,1,0,1,0,0,0,1,0],
+      [1,0,1,1,1,0,1,0,0,1,1,0,1,0,1,0,1,1,0,0,1],
+      [1,0,1,1,1,0,1,0,1,0,0,1,0,1,0,1,0,0,1,0,0],
+      [1,0,1,1,1,0,1,1,0,1,1,0,1,0,1,1,0,1,0,1,1],
+      [1,0,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,1,0,0],
+      [1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,0,1,1],
+    ];
+
+    pattern.forEach((row, r) => {
+      row.forEach((cell, c) => {
+        ctx.fillStyle = cell ? '#111' : '#fff';
+        ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+      });
+    });
+
+    // Center TV emoji overlay
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    ctx.roundRect(72, 72, 48, 48, 8);
+    ctx.fill();
+    ctx.font = '28px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('📺', 96, 97);
+  }
+
+  function generateQR(url) {
+    ctx.clearRect(0, 0, 192, 192);
+    if (!url || url.trim() === '') {
+      drawPlaceholderQR();
+      return;
+    }
+
+    try {
+      // Use QRCode library to draw on canvas
+      const tempDiv = document.createElement('div');
+      new QRCode(tempDiv, {
+        text: url.trim(),
+        width: 192,
+        height: 192,
+        colorDark: '#0d1117',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+      setTimeout(() => {
+        const img = tempDiv.querySelector('img');
+        if (img) {
+          img.onload = () => ctx.drawImage(img, 0, 0, 192, 192);
+          if (img.complete) ctx.drawImage(img, 0, 0, 192, 192);
+        }
+      }, 100);
+    } catch(e) {
+      drawPlaceholderQR();
+    }
+  }
+
+  drawPlaceholderQR();
+</script>
+</body>
+</html>
